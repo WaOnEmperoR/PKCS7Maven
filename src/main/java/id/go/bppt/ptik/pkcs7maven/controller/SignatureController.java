@@ -173,6 +173,10 @@ public class SignatureController {
             CertStore certStore = new JcaCertStoreBuilder().setProvider("BC").addCertificates(cms.getCertificates()).build();
             SignerInformationStore signers = cms.getSignerInfos();
             Collection c = signers.getSigners();
+            
+            // Verify signature
+            System.out.format("%-32s%s\n", "Number of Signer(s)", c.size());
+            
             Iterator it = c.iterator();
             while (it.hasNext()) {
                 SignerInformation signer = (SignerInformation) it.next();
@@ -248,6 +252,11 @@ public class SignatureController {
                 Logger.getLogger(SignatureController.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
             }
+        
+        if (verified<1)
+        {
+            throw new UnmatchedSignatureException("Certificate Chain verification failed");
+        }
 
         return verified;
     }

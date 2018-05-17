@@ -8,7 +8,6 @@ import id.go.bppt.ptik.pkcs7maven.utils.UnmatchedSignatureException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
-import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
