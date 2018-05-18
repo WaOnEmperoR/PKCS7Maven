@@ -52,7 +52,6 @@ public class DetachedSignature {
             System.out.println("***SIGNING***");
             MessageDigest digest01 = MessageDigest.getInstance("SHA-256");
             byte[] input_rep = img_byte_rep;
-//            byte[] input_rep = "halohaloTes".getBytes();
             byte[] myhash = digest01.digest(input_rep);
             String hash_str_rep = Hex.toHexString(myhash);
             System.out.format("%-32s%s\n", "Digest of Content", hash_str_rep);
@@ -67,29 +66,7 @@ public class DetachedSignature {
                                    
             System.out.println("***VERIFYING***");
             
-            cms_control.VerifyCMS(input_rep, cms_byte_rep);
-//                            
-//            byte[] cms_from_file = FileHelper.binaryFileReader(outfile);
-//            CMSSignedData cms_obj = new CMSSignedData(cms_from_file);
-//            boolean b = cms_control.VerifyCMS(cms_obj, hash_str_rep);
-//            
-//            if (b)
-//            {
-//                System.out.println("---SIGNATURE VERIFIED---");
-//                
-//                System.out.println("===Fields of DN String===");
-//                HashMap<String, String> hm_fields_principal = cms_control.getDN_fields();
-//                for (String key : hm_fields_principal.keySet()) {
-//                    String value = hm_fields_principal.get(key);
-//                    System.out.println("Key = " + key + ", Value = " + value);
-//                }
-//                System.out.println("=========================");
-//            }
-//            else
-//            {
-//                System.out.println("---SIGNATURE VERIFICATION FAILED---");
-//            }
-                        
+            cms_control.VerifyCMS(input_rep, cms_byte_rep);                       
         } catch (UnrecoverableKeyException | UnsupportedEncodingException ex) {
             Logger.getLogger(DetachedSignature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException | NoSuchAlgorithmException ex) {

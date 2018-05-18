@@ -9,6 +9,7 @@ import id.go.bppt.ptik.pkcs7maven.controller.SignatureController;
 import id.go.bppt.ptik.pkcs7maven.utils.FileHelper;
 import id.go.bppt.ptik.pkcs7maven.utils.PrivateKey_CertChain;
 import id.go.bppt.ptik.pkcs7maven.utils.UnmatchedSignatureException;
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -32,16 +33,17 @@ import org.bouncycastle.util.encoders.Hex;
  *
  * @author Rachmawan
  */
-public class VerifySignature extends javax.swing.JFrame {
+public class SignAndVerifySignature extends javax.swing.JFrame {
 
     /**
-     * Creates new form VerifySignature
+     * Creates new form SignAndVerifySignature
      */
     private PrintStream standardOut;
     
-    public VerifySignature() {
+    public SignAndVerifySignature() {
         initComponents();
-                
+        
+        this.setTitle("PKCS7 Signed Data Demo");
     }
 
     public class CustomOutputStream extends OutputStream {
@@ -95,11 +97,13 @@ public class VerifySignature extends javax.swing.JFrame {
         txtRootCert = new javax.swing.JTextField();
         btnBrowseRoot = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
+        txtStatus = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         panelGroup.setName("TabbedPanel"); // NOI18N
 
+        txtFileInput.setEnabled(false);
         txtFileInput.setName(""); // NOI18N
 
         jLabel1.setText("File to be Signed");
@@ -110,6 +114,8 @@ public class VerifySignature extends javax.swing.JFrame {
                 btnFileSearchActionPerformed(evt);
             }
         });
+
+        txtDigitalCertificate.setEnabled(false);
 
         jLabel2.setText("Digital Certificate");
 
@@ -132,6 +138,7 @@ public class VerifySignature extends javax.swing.JFrame {
 
         txtAreaLog_Signing.setColumns(20);
         txtAreaLog_Signing.setRows(5);
+        txtAreaLog_Signing.setEnabled(false);
         jScrollPane1.setViewportView(txtAreaLog_Signing);
 
         javax.swing.GroupLayout panelSigningLayout = new javax.swing.GroupLayout(panelSigning);
@@ -187,9 +194,13 @@ public class VerifySignature extends javax.swing.JFrame {
 
         panelVerify.setName("Verify"); // NOI18N
 
+        txtSignedFile.setEnabled(false);
+
         jLabel4.setText("Signed File");
 
         jLabel5.setText("Original File");
+
+        txtOriginalFile.setEnabled(false);
 
         btnBrowseDER.setText("Browse");
         btnBrowseDER.addActionListener(new java.awt.event.ActionListener() {
@@ -214,7 +225,10 @@ public class VerifySignature extends javax.swing.JFrame {
 
         txtAreaLog_Verify.setColumns(20);
         txtAreaLog_Verify.setRows(5);
+        txtAreaLog_Verify.setEnabled(false);
         jScrollPane2.setViewportView(txtAreaLog_Verify);
+
+        txtRootCert.setEnabled(false);
 
         btnBrowseRoot.setText("Browse");
         btnBrowseRoot.addActionListener(new java.awt.event.ActionListener() {
@@ -225,15 +239,20 @@ public class VerifySignature extends javax.swing.JFrame {
 
         jLabel6.setText("Root Cert");
 
+        txtStatus.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        txtStatus.setText("STATUS");
+        txtStatus.setEnabled(false);
+
         javax.swing.GroupLayout panelVerifyLayout = new javax.swing.GroupLayout(panelVerify);
         panelVerify.setLayout(panelVerifyLayout);
         panelVerifyLayout.setHorizontalGroup(
             panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelVerifyLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane2)
-                    .addGroup(panelVerifyLayout.createSequentialGroup()
+                .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelVerifyLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel5)
                             .addComponent(jLabel4)
@@ -248,7 +267,8 @@ public class VerifySignature extends javax.swing.JFrame {
                         .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnBrowseDER, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(btnBrowseRoot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnBrowseOri, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(btnBrowseOri, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(txtStatus))
                 .addContainerGap())
         );
         panelVerifyLayout.setVerticalGroup(
@@ -266,16 +286,17 @@ public class VerifySignature extends javax.swing.JFrame {
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnBrowseRoot)
-                        .addComponent(jLabel6))
+                    .addComponent(jLabel6)
+                    .addComponent(btnBrowseRoot)
                     .addGroup(panelVerifyLayout.createSequentialGroup()
                         .addComponent(txtRootCert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnVerify)))
                 .addGap(9, 9, 9)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         panelGroup.addTab("Verify", panelVerify);
@@ -368,7 +389,7 @@ public class VerifySignature extends javax.swing.JFrame {
             byte[] cms_DER_rep = FileHelper.CMStoDER(my_cms);
             FileHelper.binaryFileWriter(outfile, cms_DER_rep);
         } catch (KeyStoreException | UnrecoverableKeyException | NoSuchAlgorithmException | IOException ex) {
-            Logger.getLogger(VerifySignature.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SignAndVerifySignature.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         System.out.println("***END OF SIGNING***");
@@ -442,9 +463,21 @@ public class VerifySignature extends javax.swing.JFrame {
             byte[] cms_from_file = FileHelper.binaryFileReader(signed_file);
             CMSSignedData cms_obj = new CMSSignedData(cms_from_file);
             
-            cms_control.VerifyCMS(img_byte_rep, cms_from_file);
+            int result = cms_control.VerifyCMS(img_byte_rep, cms_from_file);
+            if (result>0)
+            {
+                txtStatus.setText("SIGNATURE VERIFIED");
+                txtStatus.setBackground(Color.GREEN);
+            }
+            else
+            {
+                txtStatus.setText("SIGNATURE VERIFICATION FAILED");
+                txtStatus.setBackground(Color.RED);
+            }
         } catch (IOException | CMSException | UnmatchedSignatureException ex) {
-            Logger.getLogger(VerifySignature.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SignAndVerifySignature.class.getName()).log(Level.SEVERE, null, ex);
+            txtStatus.setText("SIGNATURE VERIFICATION FAILED");
+            txtStatus.setBackground(Color.RED);
         }
         
         System.out.println("***END OF VERIFICATION***");
@@ -467,20 +500,21 @@ public class VerifySignature extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(VerifySignature.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SignAndVerifySignature.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(VerifySignature.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SignAndVerifySignature.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(VerifySignature.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SignAndVerifySignature.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(VerifySignature.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(SignAndVerifySignature.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new VerifySignature().setVisible(true);
+                new SignAndVerifySignature().setVisible(true);
             }
         });
     }
@@ -512,5 +546,6 @@ public class VerifySignature extends javax.swing.JFrame {
     private javax.swing.JTextField txtOriginalFile;
     private javax.swing.JTextField txtRootCert;
     private javax.swing.JTextField txtSignedFile;
+    private javax.swing.JTextField txtStatus;
     // End of variables declaration//GEN-END:variables
 }
