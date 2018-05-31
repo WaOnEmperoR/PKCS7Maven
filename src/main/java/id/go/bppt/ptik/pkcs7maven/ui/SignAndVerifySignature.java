@@ -8,6 +8,7 @@ package id.go.bppt.ptik.pkcs7maven.ui;
 import id.go.bppt.ptik.pkcs7maven.controller.SignatureController;
 import id.go.bppt.ptik.pkcs7maven.utils.FileHelper;
 import id.go.bppt.ptik.pkcs7maven.utils.PrivateKey_CertChain;
+import id.go.bppt.ptik.pkcs7maven.utils.StringFormatException;
 import id.go.bppt.ptik.pkcs7maven.utils.UnmatchedSignatureException;
 import java.awt.Color;
 import java.io.File;
@@ -18,6 +19,7 @@ import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -98,12 +100,13 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
         btnBrowseRoot = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
         txtStatus = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         panelGroup.setName("TabbedPanel"); // NOI18N
 
-        txtFileInput.setEnabled(false);
+        txtFileInput.setEditable(false);
         txtFileInput.setName(""); // NOI18N
 
         jLabel1.setText("File to be Signed");
@@ -115,7 +118,7 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
             }
         });
 
-        txtDigitalCertificate.setEnabled(false);
+        txtDigitalCertificate.setEditable(false);
 
         jLabel2.setText("Digital Certificate");
 
@@ -194,13 +197,13 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
 
         panelVerify.setName("Verify"); // NOI18N
 
-        txtSignedFile.setEnabled(false);
+        txtSignedFile.setEditable(false);
 
-        jLabel4.setText("Signed File");
+        jLabel4.setText("Signature File");
 
         jLabel5.setText("Original File");
 
-        txtOriginalFile.setEnabled(false);
+        txtOriginalFile.setEditable(false);
 
         btnBrowseDER.setText("Browse");
         btnBrowseDER.addActionListener(new java.awt.event.ActionListener() {
@@ -228,7 +231,7 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
         txtAreaLog_Verify.setEnabled(false);
         jScrollPane2.setViewportView(txtAreaLog_Verify);
 
-        txtRootCert.setEnabled(false);
+        txtRootCert.setEditable(false);
 
         btnBrowseRoot.setText("Browse");
         btnBrowseRoot.addActionListener(new java.awt.event.ActionListener() {
@@ -239,9 +242,16 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
 
         jLabel6.setText("Root Cert");
 
+        txtStatus.setEditable(false);
         txtStatus.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtStatus.setText("STATUS");
-        txtStatus.setEnabled(false);
+
+        jButton1.setText("jButton1");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelVerifyLayout = new javax.swing.GroupLayout(panelVerify);
         panelVerify.setLayout(panelVerifyLayout);
@@ -256,8 +266,9 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
                         .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel5)
                             .addComponent(jLabel4)
-                            .addComponent(jLabel6))
-                        .addGap(107, 107, 107)
+                            .addComponent(jLabel6)
+                            .addComponent(jButton1))
+                        .addGap(89, 89, 89)
                         .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnVerify, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(txtSignedFile)
@@ -291,7 +302,9 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
                     .addGroup(panelVerifyLayout.createSequentialGroup()
                         .addComponent(txtRootCert, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnVerify)))
+                        .addGroup(panelVerifyLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnVerify)
+                            .addComponent(jButton1))))
                 .addGap(9, 9, 9)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -478,11 +491,45 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
             Logger.getLogger(SignAndVerifySignature.class.getName()).log(Level.SEVERE, null, ex);
             txtStatus.setText("SIGNATURE VERIFICATION FAILED");
             txtStatus.setBackground(Color.RED);
+        } catch (StringFormatException | ParseException ex) {
+            Logger.getLogger(SignAndVerifySignature.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         System.out.println("***END OF VERIFICATION***");
     }//GEN-LAST:event_btnVerifyActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        VerifySample();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    
+    private void VerifySample()
+    {
+        SignatureController cms_control = new SignatureController();
+        cms_control.setRoot_cert_path("D:\\Tugas PTIK\\Certificate Authority\\E-voting\\Real_Root_CA.cer");
+        
+        byte[] cms_from_file;
+        try {
+            cms_from_file = FileHelper.binaryFileReader("D:\\Tugas PTIK\\Pemilu Elektronik\\evm2017_67208a11-0c76-4078-9284-806347c0932c.DER");
+            CMSSignedData cms_obj = new CMSSignedData(cms_from_file);
+            
+//            int result = cms_control.verifyCMSNotDetached(cms_from_file);
+//            if (result>0)
+//            {
+//                txtStatus.setText("SIGNATURE VERIFIED");
+//                txtStatus.setBackground(Color.GREEN);
+//            }
+//            else
+//            {
+//                txtStatus.setText("SIGNATURE VERIFICATION FAILED");
+//                txtStatus.setBackground(Color.RED);
+//            }
+        } catch (IOException | CMSException ex) {
+            Logger.getLogger(SignAndVerifySignature.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
     /**
      * @param args the command line arguments
      */
@@ -527,6 +574,7 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
     private javax.swing.JButton btnFileSearch;
     private javax.swing.JButton btnGenerateCMS;
     private javax.swing.JButton btnVerify;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

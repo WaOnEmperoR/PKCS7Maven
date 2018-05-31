@@ -148,7 +148,7 @@ public class SignatureController {
             ContentSigner sha1Signer = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(pkcc.getPriv_key());
             gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().setProvider("BC").build()).build(sha1Signer, cert));
             gen.addCertificates(certs);
-            CMSSignedData sigData = gen.generate(msg, true);
+            CMSSignedData sigData = gen.generate(msg, false);
 
             return sigData;
 
@@ -159,7 +159,7 @@ public class SignatureController {
         return null;
     }
 
-    public int VerifyCMS(byte[] originalBytes, byte[] signatureBytes) throws UnmatchedSignatureException {
+    public int VerifyCMS(byte[] originalBytes, byte[] signatureBytes) throws UnmatchedSignatureException, StringFormatException, ParseException {
         Security.addProvider(new BouncyCastleProvider());
 
         int verified = 0;
@@ -173,6 +173,8 @@ public class SignatureController {
             CertStore certStore = new JcaCertStoreBuilder().setProvider("BC").addCertificates(cms.getCertificates()).build();
             SignerInformationStore signers = cms.getSignerInfos();
             Collection c = signers.getSigners();
+            
+            System.out.format("%-32s%s\n", "is it Detached?", cms.isDetachedSignature());
             
             // Verify signature
             System.out.format("%-32s%s\n", "Number of Signer(s)", c.size());
@@ -240,25 +242,117 @@ public class SignatureController {
                             
                 if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(new BouncyCastleProvider()).build(certFromSignedData))) {
                     System.out.println("SIGNATURE VALUE VERIFIED <BY BOUNCY CASTLE STANDARD>");
-//                    System.out.println(Hex.toHexString(signer.getContentDigest()));
+                    // Return the content digest (hash of content)
+                    System.out.format("%-32s%s\n", "Content Digest", Arrays.toString(signer.getContentDigest()));
                     verified++;
                 } else {
                     System.out.println("SIGNATURE VALUE VERIFICATION <BY BOUNCY CASTLE STANDARD> FAILED");
                 }                
                 
-
                 }
-            } catch (CMSException | GeneralSecurityException | OperatorCreationException | StringFormatException | ParseException ex) {
+            } catch (CMSException | GeneralSecurityException | OperatorCreationException ex) {
                 Logger.getLogger(SignatureController.class.getName()).log(Level.SEVERE, null, ex);
             } finally {
             }
         
         if (verified<1)
         {
-            throw new UnmatchedSignatureException("Certificate Chain verification failed");
+            throw new UnmatchedSignatureException("Verification Failed");
         }
 
         return verified;
+    }
+    
+    public byte[] verifyCMSNotDetached(byte[] cmsBytes) throws UnmatchedSignatureException
+    {
+        Security.addProvider(new BouncyCastleProvider());
+
+        int verified = 0;
+        byte[] returnBytes = null;
+        
+        CMSSignedData cms;
+        try {
+            cms = new CMSSignedData(cmsBytes);
+
+            Store store = cms.getCertificates();
+            
+            CertStore certStore = new JcaCertStoreBuilder().setProvider("BC").addCertificates(cms.getCertificates()).build();
+            SignerInformationStore signers = cms.getSignerInfos();
+            Collection c = signers.getSigners();
+            
+            returnBytes = (byte[]) cms.getSignedContent().getContent();
+            
+            // Is it Detached Signature or not
+            System.out.format("%-32s%s\n", "Is it Detached?", cms.isDetachedSignature());
+            
+            // Get number of signers
+            System.out.format("%-32s%s\n", "Number of Signer(s)", c.size());
+            
+            Iterator it = c.iterator();
+            while (it.hasNext()) {
+                SignerInformation signer = (SignerInformation) it.next();
+                Collection certCollection = store.getMatches(signer.getSID());
+
+                JcaX509CertificateConverter converter = new JcaX509CertificateConverter().setProvider("BC");
+
+                ArrayList<X509CertificateHolder> listCertDatFirm = new ArrayList(store.getMatches(null));
+                System.out.format("%-32s%d\n", "Number of cert Holders All", listCertDatFirm.size());
+
+                try {
+                    verifyChain(listCertDatFirm);
+                } catch (CertificateVerificationException ex) {
+                    System.out.println("CERTIFICATE CHAIN VERIFICATION FAILED");
+                    Logger.getLogger(SignatureController.class.getName()).log(Level.SEVERE, null, ex);
+                    throw new UnmatchedSignatureException("Certificate Chain verification failed");
+                }
+                System.out.println("CERTIFICATE CHAIN VERIFIED");
+
+                Collection<X509CertificateHolder> holders = store.getMatches(signer.getSID());
+
+                Iterator certIt = certCollection.iterator();
+                X509CertificateHolder certHolder = (X509CertificateHolder) certIt.next();
+                X509Certificate certFromSignedData = new JcaX509CertificateConverter().setProvider(new BouncyCastleProvider()).getCertificate(certHolder);
+
+                Principal princ = certFromSignedData.getIssuerDN();
+
+                //Get Signer Name
+                Principal p = certFromSignedData.getSubjectDN();
+                System.out.format("%-32s%s\n", "Signer Distinguished Name", p.getName());
+                
+                try{
+                    RootCertChecker rc = new RootCertChecker();
+
+                    rc.checkCertificate(getRootCertCandidate(), getRoot_cert_path());
+                }
+                catch(FileNotFoundException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException | CertificateException ex)
+                {
+                    System.out.println("ROOT CERT VERIFICATION FAILED");
+                    throw new UnmatchedSignatureException("The System does not recognized this root Certificate");
+                }
+                System.out.println("ROOT CERTIFICATE VERIFIED");
+                            
+                if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(new BouncyCastleProvider()).build(certFromSignedData))) {
+                    System.out.println("SIGNATURE VALUE VERIFIED <BY BOUNCY CASTLE STANDARD>");
+                    // Return the content digest (hash of content)
+                    System.out.format("%-32s%s\n", "Content Digest", Arrays.toString(signer.getContentDigest()));
+                    verified++;
+                } else {
+                    System.out.println("SIGNATURE VALUE VERIFICATION <BY BOUNCY CASTLE STANDARD> FAILED");
+                }                
+                
+                }
+            } catch (CMSException | GeneralSecurityException | OperatorCreationException ex) {
+                Logger.getLogger(SignatureController.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                
+            }
+        
+        if (verified<1)
+        {
+            throw new UnmatchedSignatureException("Verification Failed");
+        }
+
+        return returnBytes;
     }
 
     private static PKIXCertPathBuilderResult verifyChain(ArrayList<X509CertificateHolder> cert_chain) throws CertificateException, CertificateVerificationException {

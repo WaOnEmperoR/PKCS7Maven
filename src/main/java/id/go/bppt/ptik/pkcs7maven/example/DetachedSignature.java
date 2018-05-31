@@ -4,13 +4,17 @@ package id.go.bppt.ptik.pkcs7maven.example;
 import id.go.bppt.ptik.pkcs7maven.controller.SignatureController;
 import id.go.bppt.ptik.pkcs7maven.utils.FileHelper;
 import id.go.bppt.ptik.pkcs7maven.utils.PrivateKey_CertChain;
+import id.go.bppt.ptik.pkcs7maven.utils.StringFormatException;
 import id.go.bppt.ptik.pkcs7maven.utils.UnmatchedSignatureException;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bouncycastle.cms.CMSSignedData;
@@ -39,7 +43,7 @@ public class DetachedSignature {
         String passphrase = "rahasiaya";
        
         String img_input = "D:\\Tugas PTIK\\Certificate Authority\\SIMONEV\\Input\\IMG-20161004-WA0012.jpg";
-        String outfile = "D:\\Tugas PTIK\\Pemilu Elektronik\\SIDOARJO - MARET 2018\\CMS_example.DER";
+        String outfile = "D:\\Tugas PTIK\\Pemilu Elektronik\\SIDOARJO - MARET 2018\\CMS_example_nodata.DER";
         
         // Verify against root certificate
         String root_cert_path = "D:\\Tugas PTIK\\Certificate Authority\\E-voting\\Real_Root_CA.cer";
@@ -49,9 +53,13 @@ public class DetachedSignature {
            
             byte[] img_byte_rep = FileHelper.BitmapToByteArray(img_input);
             
+            File fi = new File(img_input);
+            byte[] fileContent = Files.readAllBytes(fi.toPath());
+            
             System.out.println("***SIGNING***");
             MessageDigest digest01 = MessageDigest.getInstance("SHA-256");
-            byte[] input_rep = img_byte_rep;
+//            byte[] input_rep = img_byte_rep;
+            byte[] input_rep = fileContent;
             byte[] myhash = digest01.digest(input_rep);
             String hash_str_rep = Hex.toHexString(myhash);
             System.out.format("%-32s%s\n", "Digest of Content", hash_str_rep);
@@ -71,7 +79,7 @@ public class DetachedSignature {
             Logger.getLogger(DetachedSignature.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException | NoSuchAlgorithmException ex) {
             Logger.getLogger(DetachedSignature.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (GeneralSecurityException ex) {
+        } catch (GeneralSecurityException | StringFormatException | ParseException ex) {
             Logger.getLogger(DetachedSignature.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
