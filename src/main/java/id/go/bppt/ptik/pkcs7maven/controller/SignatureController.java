@@ -45,6 +45,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.CMSAttributes;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
@@ -118,7 +119,7 @@ public class SignatureController {
     private String root_cert_path;
     private HashMap<String, String> DN_fields; 
 
-    public CMSSignedData CMSGenerator(byte[] content, PrivateKey_CertChain pkcc) {
+    public CMSSignedData CMSGenerator(byte[] content, PrivateKey_CertChain pkcc, boolean encapsulate) {
         Security.addProvider(new BouncyCastleProvider());
 
         try {
@@ -148,7 +149,7 @@ public class SignatureController {
             ContentSigner sha1Signer = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(pkcc.getPriv_key());
             gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().setProvider("BC").build()).build(sha1Signer, cert));
             gen.addCertificates(certs);
-            CMSSignedData sigData = gen.generate(msg, false);
+            CMSSignedData sigData = gen.generate(msg, encapsulate);
 
             return sigData;
 
@@ -218,8 +219,12 @@ public class SignatureController {
                 Principal p = certFromSignedData.getSubjectDN();
                 System.out.format("%-32s%s\n", "Signer Distinguished Name", p.getName());
                 
+//                1.2.840.113549.1.9.16.6.2.14
                 //Get Signing Time
-                org.bouncycastle.asn1.cms.Attribute signingTime = attributes.get(new ASN1ObjectIdentifier("1.2.840.113549.1.9.5"));
+//                org.bouncycastle.asn1.cms.Attribute signingTime = attributes.get(new ASN1ObjectIdentifier("1.2.840.113549.1.9.5"));
+//                org.bouncycastle.asn1.cms.Attribute signingTime = attributes.get(new ASN1ObjectIdentifier("1.2.840.113549.1.9.16.6.2.14"));
+                org.bouncycastle.asn1.cms.Attribute signingTime = attributes.get(PKCSObjectIdentifiers.id_aa_signatureTimeStampToken);
+//                PKCSObjectIdentifiers.id_aa_signatureTimeStampToken
                 String asn1time = signingTime.getAttrValues().toString();
                 System.out.format("%-32s%s\n", "Signing Time (RAW format)", asn1time);
 
@@ -319,6 +324,8 @@ public class SignatureController {
                 Principal p = certFromSignedData.getSubjectDN();
                 System.out.format("%-32s%s\n", "Signer Distinguished Name", p.getName());
                 
+                this.setDN_fields(StringHelper.DNFieldsMapper(p.getName()));
+                
                 try{
                     RootCertChecker rc = new RootCertChecker();
 
@@ -334,7 +341,7 @@ public class SignatureController {
                 if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(new BouncyCastleProvider()).build(certFromSignedData))) {
                     System.out.println("SIGNATURE VALUE VERIFIED <BY BOUNCY CASTLE STANDARD>");
                     // Return the content digest (hash of content)
-                    System.out.format("%-32s%s\n", "Content Digest", Arrays.toString(signer.getContentDigest()));
+                    System.out.format("%-32s%s\n", "Content Digest", Hex.toHexString(signer.getContentDigest()));
                     verified++;
                 } else {
                     System.out.println("SIGNATURE VALUE VERIFICATION <BY BOUNCY CASTLE STANDARD> FAILED");

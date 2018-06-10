@@ -10,6 +10,7 @@ import id.go.bppt.ptik.pkcs7maven.utils.FileHelper;
 import id.go.bppt.ptik.pkcs7maven.utils.PrivateKey_CertChain;
 import id.go.bppt.ptik.pkcs7maven.utils.StringFormatException;
 import id.go.bppt.ptik.pkcs7maven.utils.UnmatchedSignatureException;
+import id.go.bppt.ptik.tsa.TSAUtils;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
@@ -396,7 +397,7 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
             System.out.format("%-32s%s\n", "Digest of Content", hash_str_rep);
         
             SignatureController cms_control = new SignatureController();
-            CMSSignedData my_cms = cms_control.CMSGenerator(input_rep, pkcc);
+            CMSSignedData my_cms = cms_control.CMSGenerator(input_rep, pkcc, true);
             
             byte[] cms_byte_rep = my_cms.getEncoded();
             byte[] cms_DER_rep = FileHelper.CMStoDER(my_cms);
@@ -500,7 +501,10 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        VerifySample();
+        String L = "Kecamatan\\+Kelurahan";
+        System.out.println(L.split("\\\\+")[0]);
+//        VerifySample();
+//            TSAUtils.getTimeStampToken(1);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     
@@ -525,7 +529,12 @@ public class SignAndVerifySignature extends javax.swing.JFrame {
 //                txtStatus.setText("SIGNATURE VERIFICATION FAILED");
 //                txtStatus.setBackground(Color.RED);
 //            }
-        } catch (IOException | CMSException ex) {
+            
+            byte[] hasil = cms_control.verifyCMSNotDetached(cms_from_file);
+            FileHelper.binaryFileWriter("D:\\Tugas PTIK\\Pemilu Elektronik\\evm2017_67208a11-0c76-4078-9284-806347c0932c.png", hasil);
+        } catch (IOException | CMSException | UnmatchedSignatureException ex) {
+            txtStatus.setText("SIGNATURE VERIFICATION FAILED");
+            txtStatus.setBackground(Color.RED);
             Logger.getLogger(SignAndVerifySignature.class.getName()).log(Level.SEVERE, null, ex);
         }
         

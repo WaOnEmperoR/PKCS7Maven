@@ -6,6 +6,7 @@ import id.go.bppt.ptik.pkcs7maven.utils.FileHelper;
 import id.go.bppt.ptik.pkcs7maven.utils.PrivateKey_CertChain;
 import id.go.bppt.ptik.pkcs7maven.utils.StringFormatException;
 import id.go.bppt.ptik.pkcs7maven.utils.UnmatchedSignatureException;
+import id.go.bppt.ptik.tsa.TSAUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -43,7 +44,7 @@ public class DetachedSignature {
         String passphrase = "rahasiaya";
        
         String img_input = "D:\\Tugas PTIK\\Certificate Authority\\SIMONEV\\Input\\IMG-20161004-WA0012.jpg";
-        String outfile = "D:\\Tugas PTIK\\Pemilu Elektronik\\SIDOARJO - MARET 2018\\CMS_example_nodata.DER";
+        String outfile = "D:\\Tugas PTIK\\Pemilu Elektronik\\SIDOARJO - MARET 2018\\CMS_example_data.p7s";
         
         // Verify against root certificate
         String root_cert_path = "D:\\Tugas PTIK\\Certificate Authority\\E-voting\\Real_Root_CA.cer";
@@ -66,7 +67,9 @@ public class DetachedSignature {
         
             SignatureController cms_control = new SignatureController();
             cms_control.setRoot_cert_path(root_cert_path);
-            CMSSignedData my_cms = cms_control.CMSGenerator(input_rep, pkcc);
+            CMSSignedData my_cms = cms_control.CMSGenerator(input_rep, pkcc, true);
+            
+            my_cms = TSAUtils.addTimestamp("", my_cms, 0);
             
             byte[] cms_byte_rep = my_cms.getEncoded();
             byte[] cms_DER_rep = FileHelper.CMStoDER(my_cms);
