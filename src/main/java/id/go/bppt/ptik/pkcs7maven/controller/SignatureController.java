@@ -7,12 +7,15 @@ package id.go.bppt.ptik.pkcs7maven.controller;
 
 import id.go.bppt.ptik.pkcs7maven.utils.CertificateVerificationException;
 import id.go.bppt.ptik.pkcs7maven.utils.ChainVerifier;
+import id.go.bppt.ptik.pkcs7maven.utils.FileHelper;
 import id.go.bppt.ptik.pkcs7maven.utils.PrivateKey_CertChain;
 import id.go.bppt.ptik.pkcs7maven.utils.RootCertChecker;
 import id.go.bppt.ptik.pkcs7maven.utils.StringFormatException;
 import id.go.bppt.ptik.pkcs7maven.utils.StringHelper;
 import id.go.bppt.ptik.pkcs7maven.utils.UnmatchedSignatureException;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -40,6 +43,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cms.Attribute;
@@ -160,7 +164,7 @@ public class SignatureController {
         return null;
     }
 
-    public int VerifyCMS(byte[] originalBytes, byte[] signatureBytes) throws UnmatchedSignatureException, StringFormatException, ParseException {
+    public int VerifyCMS(byte[] originalBytes, byte[] signatureBytes) throws UnmatchedSignatureException, StringFormatException, ParseException, IOException {
         Security.addProvider(new BouncyCastleProvider());
 
         int verified = 0;
@@ -268,7 +272,7 @@ public class SignatureController {
         return verified;
     }
     
-    public byte[] verifyCMSNotDetached(byte[] cmsBytes) throws UnmatchedSignatureException
+    public byte[] verifyCMSNotDetached(byte[] cmsBytes) throws UnmatchedSignatureException, IOException
     {
         Security.addProvider(new BouncyCastleProvider());
 
@@ -362,7 +366,7 @@ public class SignatureController {
         return returnBytes;
     }
 
-    private static PKIXCertPathBuilderResult verifyChain(ArrayList<X509CertificateHolder> cert_chain) throws CertificateException, CertificateVerificationException {
+    private static PKIXCertPathBuilderResult verifyChain(ArrayList<X509CertificateHolder> cert_chain) throws CertificateException, CertificateVerificationException, IOException {
         JcaX509CertificateConverter converter = new JcaX509CertificateConverter().setProvider("BC");
 
         X509Certificate target_cert = null;
@@ -372,6 +376,13 @@ public class SignatureController {
 
             if (i == 0) {
                 target_cert = cert_loop;
+                
+                String result = FileHelper.x509CertificateToPem(target_cert);
+//                FileHelper.binaryFileWriter("mycert.cer", result.getBytes());
+                
+                FileUtils.writeStringToFile(new File("myCert.pem"), result, "utf-8");
+                
+                FileHelper.binaryFileWriter("CertKu.cer", target_cert.getEncoded());
             } else {
                 additional_cert.add(cert_loop);
                 try {
