@@ -34,6 +34,7 @@ import org.bouncycastle.util.encoders.Hex;
 public class DetachedSignature {
         /**
      * @param args the command line arguments
+     * @throws id.go.bppt.ptik.pkcs7maven.utils.UnmatchedSignatureException
      */
     public static void main(String[] args) throws UnmatchedSignatureException {
         // TODO code application logic here
@@ -69,7 +70,7 @@ public class DetachedSignature {
             cms_control.setRoot_cert_path(root_cert_path);
             CMSSignedData my_cms = cms_control.CMSGenerator(input_rep, pkcc, true);
             
-            my_cms = TSAUtils.addTimestamp("", my_cms, 0);
+//            my_cms = TSAUtils.addTimestamp("", my_cms, 0);
             
             byte[] cms_byte_rep = my_cms.getEncoded();
             byte[] cms_DER_rep = FileHelper.CMStoDER(my_cms);
