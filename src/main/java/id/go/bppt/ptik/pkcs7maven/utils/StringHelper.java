@@ -21,7 +21,7 @@ public class StringHelper {
     
     public static Date ASN1DateParser(String rawdate) throws StringFormatException, ParseException
     {
-        Date ret_date = null;
+        Date ret_date;
        
         boolean status = false;
         String regex = "(\\[\\d{12}Z\\])";

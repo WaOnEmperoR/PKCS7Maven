@@ -61,7 +61,8 @@ public class DetachedSignature {
             System.out.println("***SIGNING***");
             MessageDigest digest01 = MessageDigest.getInstance("SHA-256");
 //            byte[] input_rep = img_byte_rep;
-            byte[] input_rep = fileContent;
+//            byte[] input_rep = fileContent;
+            byte[] input_rep = "Percobaan".getBytes();
             byte[] myhash = digest01.digest(input_rep);
             String hash_str_rep = Hex.toHexString(myhash);
             System.out.format("%-32s%s\n", "Digest of Content", hash_str_rep);
