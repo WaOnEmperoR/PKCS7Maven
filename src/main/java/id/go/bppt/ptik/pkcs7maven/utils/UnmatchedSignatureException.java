@@ -11,6 +11,8 @@ package id.go.bppt.ptik.pkcs7maven.utils;
  * @author Rachmawan
  */
 public class UnmatchedSignatureException extends Exception{
+
+    private static final long serialVersionUID = 1L;
     public UnmatchedSignatureException()
     {
     
